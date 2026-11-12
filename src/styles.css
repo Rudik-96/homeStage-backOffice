@@ -100,6 +100,7 @@ button {
   margin-top: 12px;
   color: var(--bad);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .muted {
@@ -194,7 +195,7 @@ button {
 /* ---------- cards ---------- */
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
   gap: 12px;
 }
 
@@ -226,7 +227,7 @@ button {
 
 .charts {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: 12px;
   margin-top: 12px;
 }
@@ -361,7 +362,7 @@ tr:last-child td {
 /* ---------- designs ---------- */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
   gap: 14px;
 }
 
@@ -513,4 +514,81 @@ tr:last-child td {
   padding: 40px;
   text-align: center;
   color: var(--sub);
+}
+
+/* ---------- phone ---------- */
+@media (max-width: 640px) {
+  .top {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .brand {
+    width: 100%;
+  }
+
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 -12px;
+    padding: 0 12px;
+    scrollbar-width: none;
+  }
+
+  .tab {
+    flex: none;
+  }
+
+  .me {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+  }
+
+  .page {
+    padding: 16px 12px 48px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .card .value {
+    font-size: 24px;
+  }
+
+  .charts {
+    grid-template-columns: 1fr;
+  }
+
+  .tools {
+    gap: 8px;
+  }
+
+  .tools h2 {
+    width: 100%;
+  }
+
+  .panel {
+    width: 100%;
+    padding: 14px 12px 40px;
+  }
+
+  .facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
 }
