@@ -13,7 +13,7 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const functions = getFunctions(firebaseApp, 'us-central1');
-const adminApi = httpsCallable(functions, 'adminApi', { timeout: 60000 });
+const adminApi = httpsCallable(functions, 'backOfficeApi', { timeout: 60000 });
 
 // The password lives only in this browser tab (sessionStorage). It is sent to our server
 // with every request, and the server checks it. The password is NOT in this code.
