@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
-import { api, auth } from './firebase';
+import { api, savePassword, savedPassword } from './firebase';
 import { errorText } from './format';
 import Dashboard from './pages/Dashboard.jsx';
 import Users from './pages/Users.jsx';
@@ -14,15 +13,19 @@ const TABS = [
   { id: 'recent', name: 'Latest designs' },
 ];
 
-function Login({ message }) {
+function Login({ onDone }) {
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(message ?? '');
+  const [error, setError] = useState("");
 
-  const signIn = async () => {
+  const submit = async (event) => {
+    event.preventDefault();
     setBusy(true);
-    setError('');
+    setError("");
     try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
+      await api("me", {}, password);
+      savePassword(password);
+      onDone();
     } catch (e) {
       setError(errorText(e));
     }
@@ -31,36 +34,29 @@ function Login({ message }) {
 
   return (
     <div className="center">
-      <div className="box">
+      <form className="box" onSubmit={submit}>
         <h1>HomeStage Back office</h1>
-        <p>Only admins can come in.</p>
-        <button className="primary" onClick={signIn} disabled={busy}>
-          {busy ? 'Please wait…' : 'Sign in with Google'}
+        <p>Enter the password.</p>
+        <input
+          className="search"
+          type="password"
+          autoFocus
+          autoComplete="current-password"
+          placeholder="Password"
+          style={{ width: "100%", marginBottom: 12 }}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button className="primary" type="submit" disabled={busy || !password}>
+          {busy ? "Please wait…" : "Enter"}
         </button>
         {error ? <div className="error">{error}</div> : null}
-      </div>
+      </form>
     </div>
   );
 }
 
-function NoAccess({ email, onSignOut }) {
-  return (
-    <div className="center">
-      <div className="box">
-        <h1>No access</h1>
-        <p>
-          {email ? email + ' is not in the admin list.' : 'This account is not in the admin list.'} Ask the owner to
-          add it.
-        </p>
-        <button className="ghost" onClick={onSignOut}>
-          Sign out
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Shell({ email, onSignOut }) {
+function Shell({ onSignOut }) {
   const [tab, setTab] = useState(() => localStorage.getItem('bo.tab') || 'dashboard');
   const [toCheck, setToCheck] = useState(0);
 
@@ -86,7 +82,6 @@ function Shell({ email, onSignOut }) {
           ))}
         </div>
         <div className="me">
-          <span>{email}</span>
           <button className="ghost" onClick={onSignOut}>
             Sign out
           </button>
@@ -103,27 +98,24 @@ function Shell({ email, onSignOut }) {
 }
 
 export default function App() {
-  const [user, setUser] = useState(undefined);
-  const [access, setAccess] = useState('checking');
-
-  useEffect(() => onAuthStateChanged(auth, setUser), []);
+  const [state, setState] = useState(savedPassword() ? "checking" : "login");
 
   useEffect(() => {
-    if (!user) {
-      setAccess('checking');
-      return;
-    }
-    setAccess('checking');
-    api('me')
-      .then(() => setAccess('yes'))
-      .catch(() => setAccess('no'));
-  }, [user]);
+    if (state !== "checking") return;
+    api("me")
+      .then(() => setState("in"))
+      .catch(() => {
+        savePassword("");
+        setState("login");
+      });
+  }, [state]);
 
-  const leave = () => signOut(auth);
+  const leave = () => {
+    savePassword("");
+    setState("login");
+  };
 
-  if (user === undefined) return <div className="spin">Loading…</div>;
-  if (!user || user.isAnonymous) return <Login />;
-  if (access === 'checking') return <div className="spin">Checking access…</div>;
-  if (access === 'no') return <NoAccess email={user.email} onSignOut={leave} />;
-  return <Shell email={user.email} onSignOut={leave} />;
+  if (state === "checking") return <div className="spin">Loading…</div>;
+  if (state === "login") return <Login onDone={() => setState("in")} />;
+  return <Shell onSignOut={leave} />;
 }
